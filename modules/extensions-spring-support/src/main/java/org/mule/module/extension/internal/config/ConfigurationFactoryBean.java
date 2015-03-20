@@ -7,6 +7,8 @@
 package org.mule.module.extension.internal.config;
 
 import static org.mule.module.extension.internal.config.XmlExtensionParserUtils.getResolverSet;
+import org.mule.api.MuleContext;
+import org.mule.extension.ExtensionManager;
 import org.mule.extension.introspection.Configuration;
 import org.mule.module.extension.internal.runtime.resolver.ConfigurationValueResolver;
 
@@ -23,18 +25,30 @@ final class ConfigurationFactoryBean extends BaseResolverFactoryBean<Configurati
 {
 
     private final Configuration configuration;
+    private final ExtensionManager extensionManager;
+    private final MuleContext muleContext;
 
-    ConfigurationFactoryBean(String name, Configuration configuration, ElementDescriptor element)
+    ConfigurationFactoryBean(String name,
+                             Configuration configuration,
+                             ElementDescriptor element,
+                             ExtensionManager extensionManager,
+                             MuleContext muleContext)
     {
         super(name, element);
         this.configuration = configuration;
+        this.extensionManager = extensionManager;
+        this.muleContext = muleContext;
         valueResolver = createValueResolver();
     }
 
     @Override
     protected ConfigurationValueResolver createValueResolver()
     {
-        return new ConfigurationValueResolver(name, configuration, getResolverSet(element, configuration.getParameters()));
+        return new ConfigurationValueResolver(name,
+                                              configuration,
+                                              getResolverSet(element, configuration.getParameters()),
+                                              extensionManager,
+                                              muleContext);
     }
 
     /**

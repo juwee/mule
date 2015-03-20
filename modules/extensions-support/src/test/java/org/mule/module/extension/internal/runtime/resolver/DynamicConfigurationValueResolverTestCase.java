@@ -17,13 +17,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mule.api.MuleEvent;
+import org.mule.extension.ExtensionManager;
 import org.mule.extension.introspection.Configuration;
 import org.mule.module.extension.HeisenbergExtension;
 import org.mule.module.extension.internal.runtime.ConfigurationObjectBuilder;
 import org.mule.tck.junit4.AbstractMuleTestCase;
 import org.mule.tck.size.SmallTest;
-
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -36,12 +35,11 @@ import org.mockito.stubbing.Answer;
 
 @SmallTest
 @RunWith(MockitoJUnitRunner.class)
-public class CachedConfigurationValueResolverTestCase extends AbstractMuleTestCase
+public class DynamicConfigurationValueResolverTestCase extends AbstractMuleTestCase
 {
 
     private static final Class MODULE_CLASS = HeisenbergExtension.class;
-    private static final long EXPIRATION_INTERVAL = 500;
-    private static final TimeUnit EXPIRATION_TIME_UNIT = TimeUnit.MILLISECONDS;
+    private static final String CONFIGURATION_NAME = "heisenberg";
 
     @Mock(answer = RETURNS_DEEP_STUBS)
     private Configuration configuration;
@@ -55,7 +53,10 @@ public class CachedConfigurationValueResolverTestCase extends AbstractMuleTestCa
     @Mock
     private MuleEvent event;
 
-    private CachedConfigurationValueResolver resolver;
+    @Mock
+    private ExtensionManager extensionManager;
+
+    private DynamicConfigurationValueResolver resolver;
 
     private ConfigurationObjectBuilder configurationObjectBuilder;
 
@@ -75,7 +76,7 @@ public class CachedConfigurationValueResolverTestCase extends AbstractMuleTestCa
 
         when(resolverSet.resolve(event)).thenReturn(resolverSetResult);
         configurationObjectBuilder = new ConfigurationObjectBuilder(configuration, resolverSet);
-        resolver = new CachedConfigurationValueResolver(configurationObjectBuilder, resolverSet, EXPIRATION_INTERVAL, EXPIRATION_TIME_UNIT);
+        resolver = new DynamicConfigurationValueResolver(CONFIGURATION_NAME, configuration, configurationObjectBuilder, resolverSet, extensionManager);
     }
 
     @Test
@@ -102,33 +103,4 @@ public class CachedConfigurationValueResolverTestCase extends AbstractMuleTestCa
         HeisenbergExtension instance2 = (HeisenbergExtension) resolver.resolve(event);
         assertThat(instance2, is(not(sameInstance(instance1))));
     }
-
-    @Test
-    public void stop() throws Exception
-    {
-        HeisenbergExtension config = (HeisenbergExtension) resolver.resolve(event);
-        resolver.stop();
-        assertThat(config.getStop(), is(1));
-    }
-
-    @Test
-    public void dispose() throws Exception
-    {
-        HeisenbergExtension config = (HeisenbergExtension) resolver.resolve(event);
-        resolver.dispose();
-        assertThat(config.getDispose(), is(1));
-    }
-
-    @Test
-    public void timeBasedEviction() throws Exception
-    {
-        HeisenbergExtension config = (HeisenbergExtension) resolver.resolve(event);
-
-        Thread.sleep(EXPIRATION_INTERVAL);
-        resolver.cleanUpCache();
-
-        assertThat(config.getStop(), is(1));
-        assertThat(config.getDispose(), is(1));
-    }
-
 }

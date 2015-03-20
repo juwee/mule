@@ -73,7 +73,7 @@ public abstract class ExtensionsFunctionalTestCase extends FunctionalTestCase
 
     private final ServiceRegistry serviceRegistry = new SPIServiceRegistry();
     private final ExtensionFactory extensionFactory = new DefaultExtensionFactory(serviceRegistry);
-    private ExtensionManager extensionManager = new DefaultExtensionManager();
+    private ExtensionManager extensionManager;
     private File generatedResourcesDirectory;
 
 
@@ -243,7 +243,6 @@ public abstract class ExtensionsFunctionalTestCase extends FunctionalTestCase
             {
                 throw new RuntimeException(e);
             }
-
         }
     }
 }
