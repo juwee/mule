@@ -104,14 +104,14 @@ public class ConfigParserTestCase extends ExtensionsFunctionalTestCase
     @Test
     public void sameInstanceForEquivalentEvent() throws Exception
     {
-        ValueResolver heisenbergResolver = muleContext.getRegistry().lookupObject(testConfig);
+        ValueResolver<HeisenbergExtension> heisenbergResolver = muleContext.getRegistry().lookupObject(testConfig);
         MuleEvent event = getHeisenbergEvent();
-        HeisenbergExtension heisenberg = (HeisenbergExtension) heisenbergResolver.resolve(event);
+        HeisenbergExtension heisenberg = heisenbergResolver.resolve(event);
         assertThat(heisenberg, is(sameInstance(heisenbergResolver.resolve(event))));
     }
 
     @Test
-    public void lifeCycle() throws Exception
+    public void lifecycle() throws Exception
     {
         HeisenbergExtension heisenberg = lookupHeisenberg(testConfig);
         assertThat(heisenberg.getInitialise(), is(1));
